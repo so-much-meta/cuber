@@ -1,7 +1,7 @@
 # cuber
 Rubik's Cube experimentation in Python
 
-**Plotting code from David W. Hogg's https://github.com/davidwhogg/MagicCube **
+**Plotting code from David W. Hogg's https://github.com/davidwhogg/MagicCube**
 
 See: [notebook with examples](notebooks/basic_tests.ipynb)
 
