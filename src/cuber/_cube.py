@@ -68,10 +68,10 @@ class Cube(object):
         else:
             self.plasticcolor = "#1f1f1f"
         self.fontsize = 12. * (self.N / 5.)
-        return None
     
     def reset(self):
         self.stickers = np.array([np.tile(i, (self.N, self.N)) for i in range(6)])
+        return self
 
     def turn(self, f): # , d=1):
         """
@@ -95,18 +95,45 @@ class Cube(object):
             d = 4 - d
         for l in range(self.N):
             self.apply_move(face, l, d, store_in_movelist=False)
-        return None
+        return self
 
     def move(self, move_string, echo = True, debug=False):
-        moves = re.findall(r"[RUFLDBrufldb](?:[23]'?|'[23]?)?", move_string)
+        moves = re.findall(r"[xyzMESRUFLDBrufldb](?:[23]'?|'[23]?)?", move_string)
         self.movelist.append(('move', ' '.join(moves)))
         if self.echo:
             print(' '.join(moves))
         for move in moves:
             if debug:
                 print(move)
-            face = move[0]
-            layers = [0]
+            if move[0] in 'xyz':
+                d = 1
+                reverse = False
+                face = {'x': 'R', 'y': 'U', 'z': 'F'}[move[0]]
+                for modifier in move[1:]:
+                    if modifier== "'":
+                        reverse = True
+                    else:
+                        d = int(modifier)  
+                if reverse:
+                    d = 4 - d
+                for layer in range(self.N):
+                    if debug:
+                        print(f"Calling self.apply_move({face}, {layer}, {d})")
+                    self.apply_move(face, layer, d, store_in_movelist=False)
+                continue
+            elif move[0] not in 'MES':
+                face = move[0]
+                layers = [0]
+            else:
+                if move[0] == 'M':
+                    face = 'L'
+                    layers = [1]
+                elif move[0] == 'E':
+                    face = 'D'
+                    layers = [1]
+                elif move[0] == 'S':
+                    face = 'F'
+                    layers = [1]
             d = 1
             reverse = False
             if face.islower():
@@ -123,6 +150,7 @@ class Cube(object):
                 if debug:
                     print(f"Calling self.apply_move({face}, {layer}, {d})")
                 self.apply_move(face, layer, d, debug=debug, store_in_movelist=False)
+        return self
                 
     def undo(self, debug=False):
         kind, move = self.movelist.pop()
@@ -132,10 +160,11 @@ class Cube(object):
             self.reverse(move)
         else:
             raise NotImplementedError("To be done...")
+        return self
                         
     def get_reverse_moves(self, move_string):
         moves_result = []
-        moves = re.findall(r"[RUFLDBrufldb](?:[23]'?|'[23]?)?", move_string)
+        moves = re.findall(r"[MESRUFLDBrufldb](?:[23]'?|'[23]?)?", move_string)
         for move in reversed(moves):
             face = move[0]
             d = 1
@@ -159,6 +188,7 @@ class Cube(object):
         if self.echo:
             print(f'reversed({move_string}) ==> ', end='')
         self.move(reversed_moves)
+        return self
     
     def apply_move(self, f, l=0, d=1, debug=False, store_in_movelist=True):
         """
@@ -211,7 +241,7 @@ class Cube(object):
                 self.stickers[i2] = np.rot90(self.stickers[i2], 1)
         if debug:
             print("moved", f, l, len(ds))
-        return None
+        return self
 
     def _rotate(self, args):
         """
@@ -235,7 +265,7 @@ class Cube(object):
             l = np.random.randint(self.N)
             d = 1 + np.random.randint(3)
             self.apply_move(f, l, d)
-        return None
+        return self
 
     def _render_points(self, points, viewpoint):
         """
