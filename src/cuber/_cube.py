@@ -30,6 +30,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.patches import Polygon
 import re
+from ._cube_painter import draw_cube, render_horiz
+from copy import deepcopy
 
 class Cube(object):
     """
@@ -68,7 +70,14 @@ class Cube(object):
         else:
             self.plasticcolor = "#1f1f1f"
         self.fontsize = 12. * (self.N / 5.)
-    
+        self.draw_front = True
+        # self.draw_top = True
+        self.draw_top = False
+        self.top_solving = 'pll'
+
+    def copy(self):
+        return deepcopy(self)
+
     def reset(self):
         self.stickers = np.array([np.tile(i, (self.N, self.N)) for i in range(6)])
         return self
@@ -137,7 +146,7 @@ class Cube(object):
             d = 1
             reverse = False
             if face.islower():
-                layers.append[1]
+                layers.append(1)
                 face = face.upper()
             for modifier in move[1:]:
                 if modifier== "'":
@@ -186,6 +195,7 @@ class Cube(object):
     def reverse(self, move_string):
         reversed_moves = self.get_reverse_moves(move_string)
         if self.echo:
+            print("Here")
             print(f'reversed({move_string}) ==> ', end='')
         self.move(reversed_moves)
         return self
@@ -398,11 +408,33 @@ class Cube(object):
         width, height = fig.get_size_inches()
         fig.set_size_inches(width*scale, height*scale)
         return fig
-        
-    def render(self, *views, scale=1.5):
+
+    def _render(self, perspectives, top_solving):
+        if isinstance(perspectives, str):
+            perspectives = [perspectives]
+        images = []
+        for perspective in perspectives:
+            if perspective == 'top-view':
+                # sticker_cmap = 'oll' if top_solving=='oll' else None
+                sticker_cmap = top_solving
+                images.append(draw_cube(self.stickers, perspective, sticker_cmap=sticker_cmap))
+            else:
+                images.append(draw_cube(self.stickers, perspective))
+        return render_horiz(*images)
+    
+    def render(self):
+        perspectives = []
+        if self.draw_front:
+            perspectives.append('front-right')
+        if self.draw_top:
+            perspectives.append('top-view')
+        pil_image = self._render(perspectives=perspectives, top_solving=self.top_solving)
+        return pil_image
+
+    def render_old(self, *views, scale=1.5):
         fig = self.render_fig(*views, scale=scale)
         plt.show(fig)
         
     def _ipython_display_(self):
-        self.render()
+        display(self.render())
         
