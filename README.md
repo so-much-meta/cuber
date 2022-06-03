@@ -3,7 +3,7 @@ Rubik's Cube experimentation in Python
 
 **Plotting code from David W. Hogg's https://github.com/davidwhogg/MagicCube**
 
-**Plotting code in _cube_painter.py done by cuber author**
+**Plotting code in _cube_painter.py done by so-much-meta
 
 See: [notebook with examples](notebooks/basic_tests.ipynb)
 
